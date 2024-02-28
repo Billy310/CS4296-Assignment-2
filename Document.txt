@@ -1,0 +1,10 @@
+AWS EMR 
+
+1. Set the Block public access to On and Port Range Exceptions to 22 8888 8890
+2. javac (Pathlink).java -cp $(hadoop classpath)
+3. jar cf \[Pathlink].jar *.class
+
+Check the server
+aws ec2 describe-instance-type-offerings --location-type "availability-zone" --filters Name=location,Values=us-east-1e --region us-east-1 --query "InstanceTypeOfferings[*].[InstanceType]" --output text | sort
+
+https://mvnrepository.com/artifact/org.apache.hadoop
