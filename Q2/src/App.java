@@ -72,13 +72,16 @@ public class App {
       for (java.util.Map.Entry<String, java.util.Map<String, Integer>> entry : fileWordCounts.entrySet()) {
         String fileName = entry.getKey();
         java.util.Map<String, Integer> wordCounts = entry.getValue();
+        StringBuilder sb = new StringBuilder();
+        sb.append(fileName);
         for (java.util.Map.Entry<String, Integer> wordCount : wordCounts.entrySet()) {
-          String output = fileName + " " + wordCount.getKey() + " " + wordCount.getValue();
-          context.write(new Text(output), NullWritable.get());
+          sb.append(" ").append(wordCount.getKey()).append(" ").append(wordCount.getValue());
         }
+        context.write(new Text(sb.toString()), NullWritable.get());
       }
       multipleOutputs.close();
     }
+    
   }
 
   public static void main(String[] args) throws Exception {
