@@ -75,12 +75,14 @@ public class App {
         StringBuilder sb = new StringBuilder();
         sb.append(fileName);
         for (java.util.Map.Entry<String, Integer> wordCount : wordCounts.entrySet()) {
-          sb.append(" ").append(wordCount.getKey()).append(" ").append(wordCount.getValue());
+          sb.append(" ").append(wordCount.getKey()).append(",").append(wordCount.getValue());
         }
         context.write(new Text(sb.toString()), NullWritable.get());
       }
       multipleOutputs.close();
     }
+    
+    
     
   }
 
