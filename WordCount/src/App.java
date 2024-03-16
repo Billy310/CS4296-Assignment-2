@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
@@ -46,8 +47,9 @@ public class App {
     }
   }
 
-  public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
-    private MultipleOutputs<Text, IntWritable> multipleOutputs;
+  public static class Reduce extends Reducer<Text, IntWritable, Text, NullWritable> {
+    private MultipleOutputs<Text, NullWritable> multipleOutputs;
+    private java.util.Map<String, List<Integer>> fileWordCounts = new HashMap<>();
 
     @Override
     public void setup(Context context) {
@@ -60,13 +62,18 @@ public class App {
           .mapToInt(IntWritable::get)
           .sum();
       String[] wordAndFileName = key.toString().split("@");
-      String word = wordAndFileName[0];
       String fileName = wordAndFileName[1];
-      multipleOutputs.write(key, new IntWritable(Math.min(sum, Integer.MAX_VALUE)), fileName);
+      fileWordCounts.computeIfAbsent(fileName, k -> new ArrayList<>()).add(sum);
     }
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+      for (java.util.Map.Entry<String, List<Integer>> entry : fileWordCounts.entrySet()) {
+        String fileName = entry.getKey();
+        List<Integer> counts = entry.getValue();
+        String output = fileName + " " + counts.stream().map(Object::toString).collect(Collectors.joining(", "));
+        multipleOutputs.write(new Text(output), NullWritable.get(), fileName);
+      }
       multipleOutputs.close();
     }
   }
