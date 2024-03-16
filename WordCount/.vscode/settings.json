@@ -1,9 +1,0 @@
-{
-    "java.project.sourcePaths": ["src"],
-    "java.project.outputPath": "bin",
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\Users\\user\\Downloads\\hadoop-common-2.8.5.jar",
-        "c:\\Users\\user\\Downloads\\hadoop-mapreduce-client-core-2.8.5.jar"
-    ]
-}
