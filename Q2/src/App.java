@@ -69,18 +69,28 @@ public class App {
   
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-      for (java.util.Map.Entry<String, java.util.Map<String, Integer>> entry : fileWordCounts.entrySet()) {
-        String fileName = entry.getKey();
-        java.util.Map<String, Integer> wordCounts = entry.getValue();
-        StringBuilder sb = new StringBuilder();
-        sb.append(fileName);
-        for (java.util.Map.Entry<String, Integer> wordCount : wordCounts.entrySet()) {
-          sb.append(" ").append(wordCount.getKey()).append(",").append(wordCount.getValue());
-        }
-        context.write(new Text(sb.toString()), NullWritable.get());
-      }
+      fileWordCounts.entrySet().stream()
+          .sorted(java.util.Map.Entry.comparingByKey())
+          .forEach(entry -> {
+            String fileName = entry.getKey();
+            java.util.Map<String, Integer> wordCounts = entry.getValue();
+            StringBuilder sb = new StringBuilder();
+            sb.append(fileName);
+            wordCounts.entrySet().stream()
+                .sorted(java.util.Map.Entry.<String, Integer>comparingByValue().reversed())
+                .forEach(wordCount -> {
+                  sb.append(" ").append(wordCount.getKey()).append(",").append(wordCount.getValue());
+                });
+            try {
+              context.write(new Text(sb.toString()), NullWritable.get());
+            } catch (IOException | InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+          });
       multipleOutputs.close();
     }
+    
+    
     
     
     
