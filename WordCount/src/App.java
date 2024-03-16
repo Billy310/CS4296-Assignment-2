@@ -50,12 +50,12 @@ public class App {
   public static class Reduce extends Reducer<Text, IntWritable, Text, NullWritable> {
     private MultipleOutputs<Text, NullWritable> multipleOutputs;
     private java.util.Map<String, List<Integer>> fileWordCounts = new HashMap<>();
-
+  
     @Override
     public void setup(Context context) {
       multipleOutputs = new MultipleOutputs<>(context);
     }
-
+  
     public void reduce(Text key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       int sum = StreamSupport.stream(values.spliterator(), false)
@@ -65,18 +65,19 @@ public class App {
       String fileName = wordAndFileName[1];
       fileWordCounts.computeIfAbsent(fileName, k -> new ArrayList<>()).add(sum);
     }
-
+  
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
       for (java.util.Map.Entry<String, List<Integer>> entry : fileWordCounts.entrySet()) {
         String fileName = entry.getKey();
         List<Integer> counts = entry.getValue();
         String output = fileName + " " + counts.stream().map(Object::toString).collect(Collectors.joining(", "));
-        multipleOutputs.write(new Text(output), NullWritable.get(), fileName);
+        context.write(new Text(output), NullWritable.get());
       }
       multipleOutputs.close();
     }
   }
+  
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
