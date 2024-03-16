@@ -49,26 +49,33 @@ public class App {
 
   public static class Reduce extends Reducer<Text, IntWritable, Text, NullWritable> {
     private MultipleOutputs<Text, NullWritable> multipleOutputs;
-    private java.util.Map<String, Integer> wordCounts = new HashMap<>();
-
+    private java.util.Map<String, java.util.Map<String, Integer>> fileWordCounts = new HashMap<>();
+  
     @Override
     public void setup(Context context) {
       multipleOutputs = new MultipleOutputs<>(context);
     }
-
+  
     public void reduce(Text key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       int sum = StreamSupport.stream(values.spliterator(), false)
           .mapToInt(IntWritable::get)
           .sum();
-      wordCounts.put(key.toString(), sum);
+      String[] wordAndFileName = key.toString().split("@");
+      String word = wordAndFileName[0];
+      String fileName = wordAndFileName[1];
+      fileWordCounts.computeIfAbsent(fileName, k -> new HashMap<>()).put(word, sum);
     }
-
+  
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-      for (java.util.Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
-        String output = entry.getKey() + " " + entry.getValue();
-        context.write(new Text(output), NullWritable.get());
+      for (java.util.Map.Entry<String, java.util.Map<String, Integer>> entry : fileWordCounts.entrySet()) {
+        String fileName = entry.getKey();
+        java.util.Map<String, Integer> wordCounts = entry.getValue();
+        for (java.util.Map.Entry<String, Integer> wordCount : wordCounts.entrySet()) {
+          String output = fileName + " " + wordCount.getKey() + " " + wordCount.getValue();
+          context.write(new Text(output), NullWritable.get());
+        }
       }
       multipleOutputs.close();
     }
