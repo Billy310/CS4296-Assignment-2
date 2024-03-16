@@ -30,11 +30,9 @@ public class App {
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
       Path filePath = ((FileSplit) context.getInputSplit()).getPath();
       String fileName = filePath.getName();
-      // System.out.println(fileName);
-
-      String line = value.toString().toLowerCase(); // Convert to lower case
-      line = line.replaceAll("[^a-z0-9 ]", " "); // Replace non-alphanumeric characters with space
-      String[] words = line.split("\\s+"); // Split on whitespace
+      String line = value.toString().toLowerCase();
+      line = line.replaceAll("[^a-z0-9 ]", " ");
+      String[] words = line.split("\\s+");
       Arrays.stream(words)
           .filter(dictionary::contains)
           .forEach(w -> {
@@ -68,7 +66,8 @@ public class App {
   
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-      for (java.util.Map.Entry<String, List<Integer>> entry : fileWordCounts.entrySet()) {
+      java.util.Map<String, List<Integer>> sortedFileWordCounts = new TreeMap<>(fileWordCounts);
+      for (java.util.Map.Entry<String, List<Integer>> entry : sortedFileWordCounts.entrySet()) {
         String fileName = entry.getKey();
         List<Integer> counts = entry.getValue();
         String output = fileName + " " + counts.stream().map(Object::toString).collect(Collectors.joining(", "));
@@ -76,6 +75,7 @@ public class App {
       }
       multipleOutputs.close();
     }
+    
   }
   
 
@@ -87,11 +87,9 @@ public class App {
     job.setReducerClass(Reduce.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
-
     job.setNumReduceTasks(1);
     FileInputFormat.addInputPath(job, new Path("s3://assignment2yuentatshingbilly/testFiles"));
     FileOutputFormat.setOutputPath(job, new Path("s3://assignment2yuentatshingbilly/output"));
-
     System.exit(job.waitForCompletion(true) ? 0 : 1);
   }
 }
