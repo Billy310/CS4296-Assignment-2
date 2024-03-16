@@ -50,6 +50,7 @@ public class App {
   public static class Reduce extends Reducer<Text, IntWritable, Text, NullWritable> {
     private MultipleOutputs<Text, NullWritable> multipleOutputs;
     private java.util.Map<String, java.util.Map<String, Integer>> fileWordCounts = new HashMap<>();
+    private java.util.Map<String, Integer> maxWordCounts = new HashMap<>();
   
     @Override
     public void setup(Context context) {
@@ -65,6 +66,7 @@ public class App {
       String word = wordAndFileName[0];
       String fileName = wordAndFileName[1];
       fileWordCounts.computeIfAbsent(fileName, k -> new HashMap<>()).put(word, sum);
+      maxWordCounts.put(word, Math.max(maxWordCounts.getOrDefault(word, 0), sum));
     }
   
     @Override
@@ -87,14 +89,18 @@ public class App {
               throw new RuntimeException(e);
             }
           });
+      StringBuilder sb = new StringBuilder();
+      sb.append("Total");
+      maxWordCounts.entrySet().stream()
+          .sorted(java.util.Map.Entry.<String, Integer>comparingByValue().reversed())
+          .forEach(wordCount -> {
+            sb.append(" ").append(wordCount.getKey()).append(",").append(wordCount.getValue());
+          });
+      context.write(new Text(sb.toString()), NullWritable.get());
       multipleOutputs.close();
     }
-    
-    
-    
-    
-    
   }
+  
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
