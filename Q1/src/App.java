@@ -88,8 +88,8 @@ public class App {
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
     job.setNumReduceTasks(1);
-    FileInputFormat.addInputPath(job, new Path("s3://assignment2yuentatshingbilly/testFiles"));
-    FileOutputFormat.setOutputPath(job, new Path("s3://assignment2yuentatshingbilly/output"));
+    FileInputFormat.addInputPath(job, new Path(args[0]));//"s3://assignment2yuentatshingbilly/testFiles"
+    FileOutputFormat.setOutputPath(job, new Path(args[1]));//"s3://assignment2yuentatshingbilly/output"
     System.exit(job.waitForCompletion(true) ? 0 : 1);
   }
 }

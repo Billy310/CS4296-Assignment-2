@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
@@ -112,8 +111,8 @@ public class App {
     job.setOutputValueClass(IntWritable.class);
 
     job.setNumReduceTasks(1);
-    FileInputFormat.addInputPath(job, new Path("s3://assignment2yuentatshingbilly/testFiles"));
-    FileOutputFormat.setOutputPath(job, new Path("s3://assignment2yuentatshingbilly/output"));
+    FileInputFormat.addInputPath(job, new Path(args[0])); //"s3://assignment2yuentatshingbilly/testFiles"
+    FileOutputFormat.setOutputPath(job, new Path(args[1])); //"s3://assignment2yuentatshingbilly/output"
 
     System.exit(job.waitForCompletion(true) ? 0 : 1);
   }
